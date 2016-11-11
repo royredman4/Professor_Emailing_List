@@ -7,9 +7,6 @@ import string
 import time
 
 
-
-
-
 def senderemail(class_, to_address, message, server, login):
     subject_header = class_ + " Course Information"
     from_addr = YOUR_EMAIL_ADDRESS_GOES_HERE
@@ -25,49 +22,35 @@ def senderemail(class_, to_address, message, server, login):
     server.sendmail(login, to_address, message)
 
     
-def Get_Professor_Info():
-    first = ""
-    second = ""
-    temp = ""
-    #input where you want to store your text file that holds your professors names and emails
-    fileLocation = FILE_LOCATION_GOES_HERE
-    if (os.path.exists(fileLocation)):
-        temp_Storage = []
-        t = 0
-        with open(fileLocation) as f:
-            while True:
-                if t == 0:
-                    f.readline()
-                    f.readline()
-                    t = 4
+def fin_d(ary, elem):
+    for row, i in enumerate(ary):
+        try:
+            column = i.index(elem)
+        except ValueError:
+            continue
+        return row, column
+    return -1
 
-                temp = f.read(1)
-                if not temp:
-                    # print("End of the file")
-                    break
-                while t == 4:
-                    if temp == " ":
-                        break
-                    first += temp
-                    temp = f.read(1)
-                # print ("first is " + first)
-                temp = f.read(2)
-                
-                while t == 4:
-                    temp = f.read(1)
-                    if temp == ".":
-                        second += temp
-                        second += f.read(3)
-                        f.read(1)
-                        break
-                    second += temp
-                
-                # print ("Second is " + second)
-                temp_Storage.append((first, second))
-                first = ""
-                second = ""
-            f.close()
-        return temp_Storage
+
+def Get_Professor_Info(fileLocation):
+    Name = ""
+    Email = ""
+    Professor_Info = []
+    temp = ""
+    if (os.path.exists(fileLocation)):
+        with open(fileLocation) as f:
+            temp = f.readline()
+            temp = f.readline()
+            temp = f.readline()
+            while temp:
+                Name = temp[:temp.find(" ")]
+                Email = temp[(temp.find("-")) + 2:-1]
+                Professor_Info.append((Name, Email))
+                temp = f.readline()
+        f.close()
+        for i in range(0, len(Professor_Info)):
+            print("Professor List " + str(Professor_Info[i]))
+        return Professor_Info
     else:
         os.mkdirs(fileLocation)
         return "NULL"
@@ -93,7 +76,8 @@ def Create_Index(Last_name, Course_name, Course_number, email):
     message += " class next semester, so I will be able to take your awesome class?\n\n"
     message += "I apologize if I sound a tad assertive, I just would really love to attend your class next semester since it seems that you have a great understanding of the course and I could learn alot of wonderful things from your class.\n\n"
 
-    message += "thanks for your time!!"
+    message += "thanks for your time!!
+
     return (Last_name, Course_name, Course_number, email, message)
 
 
@@ -117,25 +101,26 @@ def in_put(output):
     else:
         return raw_input(output)
 
-    
-Profesor_History = Get_Professor_Info()
+ #input where you want to store your text file that holds your professors names and emails
+Email_List_Location = FILE_LOCATION_GOES_HERE
+
+Profesor_History = Get_Professor_Info(Email_List_Location)
 New_Professors = []
+temp = "Temp"
 if (Profesor_History == "NULL"):
     Nothing_Stored = True
 else:
     Nothing_Stored = False
 
-
-login = EMAIL_ADDRESS_HERE 
-
-#input where you want to store your text file that holds your professors names and emails
-fileLocation = FILE_LOCATION_GOES_HERE
+    
 Sending_List = []
 different_course = True
-                   
+
 Display_Professors(Profesor_History)
 
+
 x = "1"
+    
 while x != "-1":
     Professor_Last_Name = in_put('What is the Last Name of the professor you\'re emailing? ')
     if (different_course):
@@ -162,7 +147,7 @@ while x != "-1":
         different_course = True
         x = in_put("\nType in \"-1 + enter\" to stop adding emails, \notherwise, press anything else to continue: ")
 
-
+fileLocation = "/home/roy/workspace/email/Email_List.txt"
 file = open(fileLocation, "a")
 for i in range(0, len(New_Professors)):
     file.write(New_Professors[i][0] + " - " + New_Professors[i][1] + "\n")
@@ -175,6 +160,8 @@ for i in range(0, len(Sending_List)):
 #FOR WHEN YOU ACTUALLY WANT TO EMAIL THE PROFESSORS
 
 
+login = EMAIL_ADDRESS_HERE
+
 
 condition = True
 while condition:
@@ -182,6 +169,7 @@ while condition:
     
     #configure The server and the host. ex: smtplib.SMTP("smtp.live.com", 587) 
     server = smtplib.SMTP(PORT_NAME, PORT)
+    
     server.ehlo()
     server.starttls()
 
@@ -194,12 +182,10 @@ while condition:
         condition = True
 
 
-for i in range(0, len(Sending_List)):
-    senderemail(Sending_List[i][2], Sending_List[i][3], Sending_List[i][4], server, login)
-    
-server.quit()
-
 print("Finished the loop and waiting here")
 
-    
 
+for i in range(0, len(Sending_List)):
+    senderemail(Sending_List[i][2], Sending_List[i][3], Sending_List[i][4], server, login)
+
+server.quit()
